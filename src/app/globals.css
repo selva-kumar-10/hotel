@@ -1,77 +1,288 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   DESIGN TOKENS: "Heritage Premium"
+   Dark espresso + kumkum maroon + brass gold on warm paper.
+   Components use these names (bg-kumkum, text-brass, bg-paper...) so a
+   re-theme is a one-file change.
+   ========================================================================== */
+
+@theme {
+  --breakpoint-xs: 30rem; /* 480px */
+
+  /* Dark grounds */
+  --color-espresso: #1c1411;
+  --color-cocoa: #140d0b;
+
+  /* Kumkum maroon: primary action on light grounds */
+  --color-kumkum: #6e1b1b;
+  --color-kumkum-deep: #4f1212;
+
+  /* Brass: accent on dark grounds. Antique gold: ornament / stars only. */
+  --color-brass: #e0bc7a;
+  --color-brass-soft: #e8c9a0;
+  --color-gold: #b07a1e;
+
+  /* Light grounds */
+  --color-paper: #f6efe3;
+  --color-parchment: #efe6d6;
+  --color-card: #fbf7ef;
+  --color-line: #ddd0b8;
+  --color-line-strong: #cdbfa8;
+
+  /* Text on light grounds (contrast on paper: ink 15:1, soft 6.9:1, muted 4.6:1) */
+  --color-ink: #1c1411;
+  --color-ink-soft: #5e5148;
+  --color-ink-muted: #756859;
+
+  /* Text on dark grounds */
+  --color-cream: #f6efe3;
+  --color-cream-soft: #e6daca;
+  --color-cream-muted: #cdbfae;
+
+  /* Vegetarian mark */
+  --color-leaf: #2f7a3f;
+  --color-leaf-light: #6fb27c;
+
+  /* Fonts (variables are set by next/font in layout.tsx) */
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, "Times New Roman", serif;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgb(28 20 17 / 0.05),
+    0 8px 24px -10px rgb(28 20 17 / 0.14);
+  --shadow-card-hover: 0 2px 4px rgb(28 20 17 / 0.06),
+    0 18px 36px -12px rgb(28 20 17 / 0.22);
+  --shadow-float: 0 10px 28px rgb(28 20 17 / 0.35);
+}
+
 :root {
-  --background: #fffbf5;
-  --foreground: #261c14;
+  --background: var(--color-paper);
+  --foreground: var(--color-ink);
+  /* Height of the fixed header; drives anchor offsets and layout */
+  --header-h: 4.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
+/* Where sticky page elements (menu tabs, order panel) stick: just under the
+   header. The header sets html[data-header] as it compacts / tucks away. */
+:root {
+  --sticky-top: var(--header-h);
 }
 
-html {
-  scroll-behavior: smooth;
+html[data-header="shown"] {
+  --sticky-top: 4rem;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
+html[data-header="hidden"] {
+  --sticky-top: 0px;
 }
 
-.font-serif {
-  font-family: var(--font-serif), Georgia, serif;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+@media (min-width: 64rem) {
+  :root {
+    --header-h: 6rem;
   }
-  50% {
-    transform: translateY(-8px);
+
+  html[data-header="shown"] {
+    --sticky-top: 4.25rem;
   }
 }
 
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+/* ==========================================================================
+   FLUID TYPE SCALE
+   ========================================================================== */
+
+@utility text-display {
+  font-size: clamp(3.25rem, 1.9rem + 4.6vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+
+@utility text-heading {
+  font-size: clamp(2.5rem, 1.7rem + 2.4vw, 3.75rem);
+  line-height: 1.03;
+  letter-spacing: -0.01em;
+}
+
+@utility text-subheading {
+  font-size: clamp(1.5rem, 1.3rem + 0.7vw, 2rem);
+  line-height: 1.1;
+}
+
+@utility text-lead {
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
+  line-height: 1.65;
+}
+
+/* Small tracked caps used for eyebrows and labels */
+@utility text-label {
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-padding-top: calc(var(--header-h) + 0.5rem);
+    -webkit-text-size-adjust: 100%;
   }
-  50% {
-    transform: translateY(-12px) rotate(1deg);
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    /* `clip` (unlike `hidden`) does not create a scroll container, so
+       position: sticky keeps working. */
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-kumkum);
+    color: var(--color-cream);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass-deep, var(--color-gold));
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
   }
 }
 
-@keyframes leaf-sway {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+/* ==========================================================================
+   MOTION
+   ========================================================================== */
+
+/* Sheets (cart + filters): slide up on phones, in from the right on desktop */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+@keyframes sheet-left {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-sheet { animation: sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.animate-fade { animation: fade-in 0.2s ease-out; }
+
+@media (min-width: 64rem) {
+  .animate-sheet { animation-name: sheet-left; }
+}
+
+/* Hero entrance: text rises in one piece at a time, photo slowly zooms */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.09); }
+}
+
+.hero-in { animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hero-d1 { animation-delay: 0.1s; }
+.hero-d2 { animation-delay: 0.25s; }
+.hero-d3 { animation-delay: 0.4s; }
+.hero-d4 { animation-delay: 0.55s; }
+.kenburns { animation: kenburns 26s ease-out both; }
+
+/* Moving food band (track holds the list twice, so -50% loops seamlessly) */
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+.marquee-track { width: max-content; animation: marquee 40s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* Scroll-driven reveal + parallax: pure CSS, no JS. Browsers without
+   scroll-driven animations (older Firefox) simply show everything. Do not use
+   inside horizontally scrolling lists: they would become the scroll timeline. */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes parallax-y {
+  from { transform: translateY(-9%); }
+  to { transform: translateY(9%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 4% entry 42%;
+    }
+
+    .parallax {
+      animation: parallax-y linear both;
+      animation-timeline: view();
+    }
+
+    /* grid items: same effect from tablet up, a little staggered per column */
+    @media (min-width: 48rem) {
+      .reveal-md {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 4% entry 42%;
+      }
+
+      .reveal-md:nth-child(3n + 2) { animation-range: entry 10% entry 48%; }
+      .reveal-md:nth-child(3n) { animation-range: entry 16% entry 54%; }
+    }
   }
-  50% {
-    transform: translateY(-10px) rotate(4deg);
+}
+
+/* Faint dotted paper texture for light sections */
+@utility bg-dots {
+  background-image: radial-gradient(rgb(110 27 27 / 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
   }
-}
 
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float-slow 6s ease-in-out infinite;
-}
-
-.animate-leaf {
-  animation: leaf-sway 5s ease-in-out infinite;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

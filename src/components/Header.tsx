@@ -1,193 +1,199 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, ArrowRight, Menu as MenuIcon, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ShoppingBag, ArrowRight, Menu as MenuIcon, X } from "lucide-react";
+import Button from "@/components/ui/Button";
+import { useCart } from "@/components/cart/CartProvider";
+import { cn } from "@/lib/cn";
+import { navItems, sectionIds, sectionNav, site } from "@/lib/site";
+import { useActiveSection } from "@/lib/useActiveSection";
+import { useScrolled } from "@/lib/useScrolled";
+import { useScrollHidden } from "@/lib/useScrollHidden";
 
-interface HeaderProps {
-  activeTab?: string;
-}
+export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const scrolled = useScrolled();
+  const scrollingDown = useScrollHidden();
+  // Never tuck the header away while the mobile menu is open
+  const hidden = scrollingDown && !menuOpen;
+  const spyId = useActiveSection(sectionIds, pathname);
+  const { count: cartCount, open: openCart } = useCart();
 
-export default function Header({ activeTab = "home" }: HeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const activeName =
+    pathname === "/menu" ? "Menu" : (sectionNav[spyId] ?? "Home");
 
-  const navItems = [
-    { name: "Home", href: "#home", id: "home" },
-    { name: "Menu", href: "#menu", id: "menu" },
-    { name: "Gallery", href: "#gallery", id: "gallery" },
-    { name: "Reviews", href: "#reviews", id: "reviews" },
-    { name: "Reels", href: "#reels", id: "reels" },
-    { name: "Contact", href: "#contacts", id: "contacts" },
-  ];
+  // Close the mobile menu with Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
+  const solid = scrolled || menuOpen;
+
+  // Tell sticky elements on the page (e.g. the menu tabs) where the header
+  // currently ends: "top" = full height, "shown" = compact, "hidden" = tucked away.
+  useEffect(() => {
+    document.documentElement.dataset.header = !scrolled
+      ? "top"
+      : hidden
+        ? "hidden"
+        : "shown";
+  }, [scrolled, hidden]);
 
   return (
     <header
-      className="absolute top-0 left-0 right-0 z-50 bg-transparent py-5 sm:py-6"
+      className={cn(
+        // Full-height and transparent over the hero. While scrolling DOWN it slides
+        // out of the way (so it never covers the content); it only comes back,
+        // compact, when the user scrolls UP.
+        "fixed inset-x-0 top-0 z-50 h-(--header-h) transition-[transform,height,background-color,box-shadow] duration-300 focus-within:translate-y-0",
+        scrolled && "h-16 lg:h-17",
+        hidden && "-translate-y-full",
+        solid &&
+          "bg-espresso/95 shadow-[0_1px_0_rgb(224_188_122/0.2)] backdrop-blur-md",
+      )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          
-          {/* Left Side: Brand Logo with Traditional Steaming Bowl Emblem */}
-          <Link
-            href="/"
-            className="flex items-center gap-3 group focus:outline-none"
-            id="brand-logo-link"
-          >
-            {/* Steaming Bowl Icon */}
-            <div className="relative flex flex-col items-center justify-center shrink-0">
-              <svg 
-                className="w-8 h-8 text-amber-700 group-hover:text-orange-600 transition-colors"
-                viewBox="0 0 32 32" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
+      {/* Same width + gutters as <Container>, so the header lines up with every section.
+          3 columns on desktop keeps the nav truly centred on the page. */}
+      <div className="mx-auto grid h-full w-full max-w-310 grid-cols-[1fr_auto] items-center px-6 md:px-8 lg:grid-cols-[1fr_auto_1fr] lg:px-12">
+        {/* Brand */}
+        <Link
+          href="/"
+          id="brand-logo-link"
+          className="group flex w-fit flex-col gap-0.5 text-cream lg:gap-1"
+          onClick={() => setMenuOpen(false)}
+        >
+          <span className="font-serif text-[1.75rem] font-semibold leading-none tracking-[0.02em] lg:text-4xl">
+            {site.name}
+          </span>
+          <span className="text-[9px] font-semibold tracking-[0.3em] text-brass uppercase lg:text-[10px]">
+            {site.tagline}
+          </span>
+        </Link>
+
+        {/* Desktop navigation */}
+        <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex xl:gap-10">
+          {navItems.map((item) => {
+            const isActive = activeName === item.name;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "border-b py-2 text-sm font-medium tracking-[0.04em] transition-colors",
+                  isActive
+                    ? "border-brass text-cream"
+                    : "border-transparent text-cream-soft hover:text-cream",
+                )}
               >
-                {/* Gentle Steam Paths */}
-                <path 
-                  d="M12 4C11.5 6 13.5 7 13 9" 
-                  stroke="currentColor" 
-                  strokeWidth="1.75" 
-                  strokeLinecap="round" 
-                  className="animate-pulse"
-                />
-                <path 
-                  d="M16 2C15.5 5 17.5 6 17 8.5" 
-                  stroke="currentColor" 
-                  strokeWidth="1.75" 
-                  strokeLinecap="round" 
-                />
-                <path 
-                  d="M20 4C19.5 6 21.5 7 21 9" 
-                  stroke="currentColor" 
-                  strokeWidth="1.75" 
-                  strokeLinecap="round" 
-                  className="animate-pulse"
-                />
-                {/* Traditional Bowl Base */}
-                <path 
-                  d="M6 12C6 12 7 22 16 22C25 22 26 12 26 12H6Z" 
-                  fill="currentColor" 
-                  opacity="0.9"
-                />
-                <path 
-                  d="M5 11H27C27.55 11 28 11.45 28 12C28 12.55 27.55 13 27 13H5C4.45 13 4 12.55 4 12C4 11.45 4.45 11 5 11Z" 
-                  fill="currentColor"
-                />
-                <path 
-                  d="M11 22H21V24C21 24.55 20.55 25 20 25H12C11.45 25 11 24.55 11 24V22Z" 
-                  fill="currentColor" 
-                  opacity="0.95"
-                />
-              </svg>
-            </div>
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
 
-            {/* Typography */}
-            <div className="flex flex-col text-left">
-              <span className="font-serif text-xl sm:text-2xl lg:text-[1.75rem] font-bold tracking-tight text-stone-900 group-hover:text-orange-700 transition-colors leading-none">
-                Saravanas
+        {/* -mr-3 (phones/tablets): the icon glyph, not its 48px tap area, lines up with the content edge */}
+        <div className="-mr-3 flex items-center justify-self-end lg:mr-0 lg:gap-3">
+          {/* Cart */}
+          <button
+            type="button"
+            onClick={openCart}
+            id="header-cart-btn"
+            aria-label={
+              cartCount > 0 ? `Open order, ${cartCount} items` : "Open order"
+            }
+            className="relative grid h-12 w-12 place-items-center rounded-sm text-cream transition-colors hover:text-brass lg:border lg:border-cream/35 lg:hover:border-brass"
+          >
+            <ShoppingBag className="h-6 w-6 lg:h-5 lg:w-5" strokeWidth={1.8} />
+            {cartCount > 0 && (
+              <span className="absolute right-1 top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-brass px-1 text-[11px] font-bold text-espresso lg:-right-2 lg:-top-2">
+                {cartCount}
               </span>
-              <span className="text-[7.5px] xs:text-[8.5px] sm:text-[10px] lg:text-[11px] font-medium tracking-wider sm:tracking-widest text-stone-500 mt-0.5 sm:mt-1 uppercase flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-                <span className="inline-block w-1.5 sm:w-2.5 h-px bg-stone-400"></span>
-                Pure Veg Restaurant
-                <span className="inline-block w-1.5 sm:w-2.5 h-px bg-stone-400"></span>
-              </span>
-            </div>
-          </Link>
+            )}
+          </button>
 
-          {/* Center: Clean Modern Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 lg:gap-10">
-            {navItems.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  id={`nav-${item.id}`}
-                  className={`relative text-sm lg:text-[15px] transition-colors py-1 ${
-                    isActive
-                      ? "text-orange-600 font-bold"
-                      : "text-stone-700 hover:text-orange-600 font-medium"
-                  }`}
-                >
-                  {item.name}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right Side: Order Now Pill Button */}
-          <div className="hidden sm:flex items-center gap-3">
-            <Link
-              href="#menu"
-              id="header-order-now-btn"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-linear-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm font-semibold shadow-md shadow-orange-600/25 hover:shadow-lg hover:shadow-orange-600/35 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              <ShoppingCart className="w-4 h-4 fill-white/20" />
-              <span>Order Now</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
-            </Link>
+          {/* Desktop CTA */}
+          <div className="hidden lg:block">
+            <Button href="/menu" id="header-order-now-btn" variant="gold">
+              Order Online
+            </Button>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
-          <div className="flex md:hidden items-center gap-2">
-            <Link
-              href="#menu"
-              className="sm:hidden inline-flex items-center justify-center p-2 rounded-full bg-orange-600 text-white shadow-xs"
-              aria-label="Order Now"
-            >
-              <ShoppingCart className="w-4 h-4" />
-            </Link>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-stone-700 hover:text-orange-600 hover:bg-orange-100/60 transition-colors focus:outline-none"
-              aria-label="Toggle Navigation Menu"
-              id="mobile-menu-toggle"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-            </button>
-          </div>
-
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="grid h-12 w-12 place-items-center text-cream transition-colors hover:text-brass lg:hidden"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            id="mobile-menu-toggle"
+          >
+            {menuOpen ? (
+              <X className="h-6 w-6" strokeWidth={1.8} />
+            ) : (
+              <MenuIcon className="h-6 w-6" strokeWidth={1.8} />
+            )}
+          </button>
         </div>
+      </div>
 
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-3 p-4 rounded-2xl bg-[#FFFBF5] border border-orange-200/80 shadow-xl backdrop-blur-lg animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col gap-1.5">
+      {/* Mobile menu */}
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            tabIndex={-1}
+            className="fixed inset-x-0 top-(--header-h) h-dvh w-full bg-cocoa/60 lg:hidden"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div
+            id="mobile-menu"
+            className="absolute inset-x-0 top-full border-t border-brass/20 bg-espresso px-5 pb-6 pt-3 shadow-2xl lg:hidden"
+          >
+            <nav aria-label="Mobile" className="flex flex-col">
               {navItems.map((item) => {
-                const isActive = activeTab === item.id;
+                const isActive = activeName === item.name;
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-orange-500 text-white font-semibold"
-                        : "text-stone-800 hover:bg-orange-100/70 hover:text-orange-600"
-                    }`}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-14 items-center justify-between border-b border-brass/15 font-serif text-2xl font-semibold transition-colors",
+                      isActive ? "text-brass" : "text-cream hover:text-brass",
+                    )}
                   >
-                    <span>{item.name}</span>
+                    {item.name}
+                    {isActive && <span className="text-xs text-brass">◆</span>}
                   </Link>
                 );
               })}
-              <div className="pt-3 mt-2 border-t border-orange-200/80">
-                <Link
-                  href="#menu"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-linear-to-r from-orange-500 to-amber-600 text-white text-sm font-semibold shadow-md shadow-orange-600/20"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>Order Now</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
-                </Link>
-              </div>
-            </div>
+            </nav>
+            <Button
+              href="/menu"
+              variant="gold"
+              size="lg"
+              block
+              className="mt-5"
+              onClick={() => setMenuOpen(false)}
+              iconRight={<ArrowRight className="h-4.5 w-4.5" />}
+            >
+              Order Now
+            </Button>
           </div>
-        )}
-
-      </div>
+        </>
+      )}
     </header>
   );
 }

@@ -1,28 +1,28 @@
-import Header from "@/components/Header";
-import HeroBanner from "@/components/HeroBanner";
-import FeaturedMenu from "@/components/FeaturedMenu";
-import ReelsSection from "@/components/ReelsSection";
-import GalleryAndReviews from "@/components/GalleryAndReviews";
-import ContactSection from "@/components/ContactSection";
-import Footer from "@/components/Footer";
+import Hero from "@/components/home/Hero";
+import FoodBand from "@/components/home/FoodBand";
+import Reels from "@/components/home/Reels";
+import Signatures from "@/components/home/Signatures";
+import QuoteBand from "@/components/home/QuoteBand";
+import Kitchen from "@/components/home/Kitchen";
+import MenuPreview from "@/components/home/MenuPreview";
+import Gallery from "@/components/home/Gallery";
+import Reviews from "@/components/home/Reviews";
+import Visit from "@/components/home/Visit";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF9F2] text-stone-900 selection:bg-orange-500 selection:text-white">
-      {/* Top Header Navbar */}
-      <Header />
-
-      {/* Main Home Page Banner with Light Orange Background */}
-      <main className="flex-1">
-        <HeroBanner />
-        <FeaturedMenu />
-        <ReelsSection />
-        <GalleryAndReviews />
-        <ContactSection />
-      </main>
-
-      {/* Footer */}
-      <Footer />
-    </div>
+    <>
+      <Hero />
+      <FoodBand />
+      <Signatures />
+      <Kitchen />
+      <MenuPreview />
+      <QuoteBand />
+      <Gallery />
+      {/* The page ends with: Reels, then Reviews, then Visit (the map) last */}
+      <Reels />
+      <Reviews />
+      <Visit />
+    </>
   );
 }
