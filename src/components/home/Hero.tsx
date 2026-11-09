@@ -31,7 +31,9 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="relative isolate flex min-h-184 flex-col overflow-hidden bg-espresso lg:h-[min(100svh,56rem)] lg:min-h-160"
+      // Phones: the hero fills the screen minus the bottom action bar (~57px) and
+      // the food band (~63px), so the band is visible without scrolling.
+      className="relative isolate flex h-[calc(100svh-7.75rem-env(safe-area-inset-bottom))] min-h-140 flex-col overflow-hidden bg-espresso lg:h-[min(100svh,56rem)] lg:min-h-160"
     >
       <Image
         src="/images/saravanas-hero.jpg"
