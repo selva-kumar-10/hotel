@@ -1,22 +1,22 @@
 /**
  * Single source of truth for restaurant details used across the site.
  *
- * Address, phone, hours and map location come from the restaurant's Google
- * Maps listing ("Hotel Saravanas", Vilangudi, Madurai).
+ * Address, hours and map location come from the restaurant's Google Maps
+ * listing ("Hotel Saravanas", Vilangudi, Madurai). The phone / WhatsApp number
+ * is the owner's own number (the Google listing shows 082206 56402).
  *
- * TODO(owner): `whatsapp` assumes the listing's phone number is also on
- * WhatsApp. If orders should go to a different WhatsApp number, change it here.
+ * Call buttons use `phone`; cart orders go to `whatsapp`. Keep them in sync.
  */
 export const site = {
   name: "Saravanas",
   tagline: "Pure Vegetarian",
   fullName: "Saravanas Pure Vegetarian Restaurant",
   phone: {
-    display: "+91 82206 56402",
-    href: "tel:+918220656402",
+    display: "+91 88709 69828",
+    href: "tel:+918870969828",
   },
   /** WhatsApp number for orders: digits only, with country code. */
-  whatsapp: "918220656402",
+  whatsapp: "918870969828",
   address: "Kural Nagar, Fatima College, Vilangudi",
   city: "Madurai, Tamil Nadu 625018",
   cityShort: "Madurai",
